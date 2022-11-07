@@ -1,0 +1,3 @@
+username: admin
+password: user123!
+endpoint: user.ci5mn5dd9fdv.us-east-2.rds.amazonaws.com
