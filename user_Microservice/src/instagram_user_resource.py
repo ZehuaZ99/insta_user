@@ -38,7 +38,10 @@ class InstagramUserResource:
     @staticmethod
     def get_follower_by_id(key):
 
-        sql = "SELECT * FROM user_database.my_follower where FollowerID=%s";
+        sql = "SELECT my_userID, GROUP_CONCAT(FollowerID SEPARATOR ', ') as Followers " \
+              "FROM user_database.my_follower " \
+              "where my_userID = %s " \
+              "GROUP BY my_userID";
         conn = InstagramUserResource._get_connection()
         cur = conn.cursor()
         res = cur.execute(sql, args=key)
@@ -49,7 +52,10 @@ class InstagramUserResource:
     @staticmethod
     def get_followings_by_id(key):
 
-        sql = "SELECT * FROM user_database.my_following where FollowingID=%s";
+        sql = "SELECT my_userID, GROUP_CONCAT(FollowingID SEPARATOR ', ') as Followings " \
+              "FROM user_database.my_following " \
+              "where my_userID = %s " \
+              "GROUP BY my_userID";
         conn = InstagramUserResource._get_connection()
         cur = conn.cursor()
         res = cur.execute(sql, args=key)
