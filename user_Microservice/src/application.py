@@ -1,64 +1,68 @@
-import pymysql
+from flask import Flask, Response, request
+from datetime import datetime
+import json
+from instagram_user_resource import InstagramUserResource
+from flask_cors import CORS
 
-import os
+# Create the Flask application object.
+app = Flask(__name__,
+            static_url_path='/',
+            static_folder='static/class-ui/',
+            template_folder='web/templates')
+
+CORS(app)
 
 
-class InstagramUserResource:
+@app.get("/api/health")
+def get_health():
+    t = str(datetime.now())
+    msg = {
+        "name": "user-Microservice",
+        "health": "Good",
+        "at time": t
+    }
 
-    def __int__(self):
-        pass
+    # DFF TODO Explain status codes, content type, ... ...
+    result = Response(json.dumps(msg), status=200, content_type="application/json")
 
-    @staticmethod
-    def _get_connection():
+    return result
 
-        usr = os.environ.get("DBUSER")
-        pw = os.environ.get("DBPW")
-        h = os.environ.get("DBHOST")
 
-        conn = pymysql.connect(
-            user=usr,
-            password=pw,
-            host=h,
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=True
-        )
-        return conn
+@app.route("/users/<userID>", methods=["GET"])
+def get_student_by_uni(userID):
 
-    @staticmethod
-    def get_user_by_id(key):
+    result = InstagramUserResource.get_user_by_id(userID)
 
-        sql = "SELECT * FROM user_database.my_users where UserID=%s";
-        conn = InstagramUserResource._get_connection()
-        cur = conn.cursor()
-        res = cur.execute(sql, args=key)
-        result = cur.fetchone()
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
 
-        return result
+    return rsp
 
-    @staticmethod
-    def get_follower_by_id(key):
+@app.route("/followers/<followerID>", methods=["GET"])
+def get_student_by_follower(followerID):
 
-        sql = "SELECT my_userID, GROUP_CONCAT(FollowerID SEPARATOR ', ') as Followers " \
-              "FROM user_database.my_follower " \
-              "where my_userID = %s " \
-              "GROUP BY my_userID";
-        conn = InstagramUserResource._get_connection()
-        cur = conn.cursor()
-        res = cur.execute(sql, args=key)
-        result = cur.fetchone()
+    result = InstagramUserResource.get_follower_by_id(followerID)
 
-        return result
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
 
-    @staticmethod
-    def get_followings_by_id(key):
+    return rsp
 
-        sql = "SELECT my_userID, GROUP_CONCAT(FollowingID SEPARATOR ', ') as Followings " \
-              "FROM user_database.my_following " \
-              "where my_userID = %s " \
-              "GROUP BY my_userID";
-        conn = InstagramUserResource._get_connection()
-        cur = conn.cursor()
-        res = cur.execute(sql, args=key)
-        result = cur.fetchone()
+@app.route("/followings/<followingID>", methods=["GET"])
+def get_student_by_following(followingID):
 
-        return result
+    result = InstagramUserResource.get_followings_by_id(followingID)
+
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+
+    return rsp
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5011)
